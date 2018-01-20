@@ -1,86 +1,160 @@
-// NeoPixel Ring simple sketch (c) 2013 Shae Erisson
-// released under the GPLv3 license to match the rest of the AdaFruit NeoPixel library
 
 #include <Adafruit_NeoPixel.h>
 #ifdef __AVR__
-  #include <avr/power.h>
+#include <avr/power.h>
 #endif
 
-// Which pin on the Arduino is connected to the NeoPixels?
-// On a Trinket or Gemma we suggest changing this to 1
-#define PIN            9
-
-// How many NeoPixels are attached to the Arduino?
+#define TIMERPIN       10
+#define SCOREPIN       12
+#define SWITCHPIN      8
+#define OBSTACLEPIN    11
 #define NUMPIXELS      30
+#define NUMPIXELS_SCORE  50
 
-// When we setup the NeoPixel library, we tell it how many pixels, and which pin to use to send signals.
-// Note that for older NeoPixel strips you might need to change the third parameter--see the strandtest
-// example for more information on possible values.
-Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
-
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, TIMERPIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel pixels1 = Adafruit_NeoPixel(NUMPIXELS_SCORE, SCOREPIN, NEO_GRB + NEO_KHZ800);
 int delayval = 2000; // delay for half a second
 int blinkdelay = 500;
+int pixel_counter = 0;
+int pixel1_counter = 0;
+int switchState = 0;
+int timeInterval = 1000;
+int incremental = 0;
 
 
-void blinking(int num_blinks, int num_pixels){
-  for (int j = 0; j < num_blinks ; j++){
-    if (j % 2 == 0){
-      for (int k = 0 ; k < num_pixels ; k++){
-        pixels.setPixelColor(k, pixels.Color(150,150,35)); 
+void blinking(int num_blinks, int num_pixels) {
+  for (int j = 0; j < num_blinks ; j++) {
+    if (j % 2 == 0) {
+      for (int k = 0 ; k < num_pixels ; k++) {
+        pixels1.setPixelColor(k, pixels1.Color(150, 150, 35));
+        pixels.setPixelColor(k, pixels.Color(150, 150, 35));
       }
       delay(blinkdelay);
+      pixels1.show();
       pixels.show();
     }
-    else{
-      for (int k = 0 ; k < num_pixels ; k++){
-        pixels.setPixelColor(k, pixels.Color(0,0,0)); 
+    else {
+      for (int k = 0 ; k < num_pixels ; k++) {
+        pixels1.setPixelColor(k, pixels1.Color(0, 0, 0));
+        pixels.setPixelColor(k, pixels.Color(0, 0, 0));
       }
       delay(blinkdelay);
+      pixels1.show();
       pixels.show();
     }
   }
 }
 
 void setup() {
-  // This is for Trinket 5V 16MHz, you can remove these three lines if you are not using a Trinket
-#if defined (__AVR_ATtiny85__)
-  if (F_CPU == 16000000) clock_prescale_set(clock_div_1);
-#endif
-  // End of trinket special code
 
-  pixels.begin(); // This initializes the NeoPixel library.
+  if (F_CPU == 16000000) clock_prescale_set(clock_div_1);
+
+  // End of trinket special code
+  Serial.begin(9600);
+  pinMode(SWITCHPIN, INPUT_PULLUP);
+  pixels.begin();
+  pixels1.begin();// This initializes the NeoPixel library.
 }
 
 void loop() {
 
-  // For a set of NeoPixels the first NeoPixel is 0, second is 1, all the way up to the count of pixels minus one.
+  const unsigned long startTime = millis(); //50
+  int num_seconds = (millis() - startTime) / 1000;
+  if (pixel1_counter == 15 || pixel_counter == 30){
+      blinking(6,30);
+      while (1){
+        // Do nothing until reset button is pressed
+      }
+  }
+  
+  
+  if (actAfterDelay(startTime, 2000)) {
+    countUpLED();
+    Serial.println("HI");
+  }
+  else {
 
-  for(int i=0;i<NUMPIXELS;i++){
-    if (i % 3 == 0){
-          // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
-        pixels.setPixelColor(i, pixels.Color(35,150,35)); // Moderately bright green color.
-    
-        pixels.show(); // This sends the updated pixel color to the hardware.
-    
-        delay(delayval); // Delay for a period of time (in milliseconds).
+    if (actAfterDelay2(startTime, 50)) {
+      if (digitalRead(SWITCHPIN) == LOW && switchState == 0) {
+        if (pixel1_counter == 15) {
+          blinking(6, 30);
+          pixel1_counter = 0;
+          
+        }
+        if (pixel1_counter % 3 == 0) {
+          pixels1.setPixelColor(pixel1_counter, pixels1.Color(35, 150, 35)); 
+        }        
+        if (pixel1_counter % 3 == 1) {
+          pixels1.setPixelColor(pixel1_counter, pixels1.Color(150, 35, 35)); 
+        }
+        if (pixel1_counter % 3 == 2) {
+          pixels1.setPixelColor(pixel1_counter, pixels1.Color(35, 35, 150)); 
+        }
+        pixel1_counter ++;
+        switchState = 1;
+        Serial.println(pixel1_counter);
+        pixels1.show();
       }
-    if (i % 3 == 1){
-          // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
-        pixels.setPixelColor(i, pixels.Color(150,35,35)); // Moderately bright green color.
-    
-        pixels.show(); // This sends the updated pixel color to the hardware.
-    
-        delay(delayval); // Delay for a period of time (in milliseconds).
-      }
-     if (i % 3 == 2){
-          // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
-        pixels.setPixelColor(i, pixels.Color(35,35,150)); // Moderately bright green color.
-    
-        pixels.show(); // This sends the updated pixel color to the hardware.
-    
-        delay(delayval); // Delay for a period of time (in milliseconds).
-      }
-   }
-   blinking(6,NUMPIXELS);
+    }
+    else if (digitalRead(SWITCHPIN) == HIGH && switchState == 1) {
+      switchState = 0;
+    }
+  }
 }
+
+bool actAfterDelay(unsigned long startTime, int timeInterval) {
+  static unsigned long prevTime = startTime;
+  unsigned long currentTime = millis();
+  if ((currentTime - prevTime) >= timeInterval) {
+    prevTime = currentTime;
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+
+bool actAfterDelay2(unsigned long startTime, int timeInterval) {
+  static unsigned long prevTime = startTime;
+  unsigned long currentTime = millis();
+  if ((currentTime - prevTime) >= timeInterval) {
+    prevTime = currentTime;
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+void countUpLED() {
+  if (pixel_counter == 30) {
+    blinking(6, 30);
+    pixel_counter ++;
+  }
+  if (pixel_counter % 3 == 0) {
+    // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
+    pixels.setPixelColor(pixel_counter, pixels.Color(35, 150, 35)); // Moderately bright green color.
+
+    pixels.show(); // This sends the updated pixel color to the hardware.
+
+\
+  }
+  if (pixel_counter % 3 == 1) {
+    // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
+    pixels.setPixelColor(pixel_counter, pixels.Color(150, 35, 35)); // Moderately bright green color.
+
+    pixels.show(); // This sends the updated pixel color to the hardware.
+
+  }
+  if (pixel_counter % 3 == 2) {
+    // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
+    pixels.setPixelColor(pixel_counter, pixels.Color(35, 35, 150)); // Moderately bright green color.
+
+    pixels.show(); // This sends the updated pixel color to the hardware.
+
+  }
+  pixel_counter ++;
+}
+
 
