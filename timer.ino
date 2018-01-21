@@ -22,29 +22,6 @@ int timeInterval = 1000;
 int incremental = 0;
 
 
-void blinking(int num_blinks, int num_pixels) {
-  for (int j = 0; j < num_blinks ; j++) {
-    if (j % 2 == 0) {
-      for (int k = 0 ; k < num_pixels ; k++) {
-        pixels1.setPixelColor(k, pixels1.Color(150, 150, 35));
-        pixels.setPixelColor(k, pixels.Color(150, 150, 35));
-      }
-      delay(blinkdelay);
-      pixels1.show();
-      pixels.show();
-    }
-    else {
-      for (int k = 0 ; k < num_pixels ; k++) {
-        pixels1.setPixelColor(k, pixels1.Color(0, 0, 0));
-        pixels.setPixelColor(k, pixels.Color(0, 0, 0));
-      }
-      delay(blinkdelay);
-      pixels1.show();
-      pixels.show();
-    }
-  }
-}
-
 void setup() {
 
   if (F_CPU == 16000000) clock_prescale_set(clock_div_1);
@@ -53,7 +30,7 @@ void setup() {
   Serial.begin(9600);
   pinMode(SWITCHPIN, INPUT_PULLUP);
   pixels.begin();
-  pixels1.begin();// This initializes the NeoPixel library.
+  pixels1.begin();
 }
 
 void loop() {
@@ -63,7 +40,6 @@ void loop() {
   if (pixel1_counter == 15 || pixel_counter == 30){
       blinking(6,30);
       while (1){
-        // Do nothing until reset button is pressed
       }
   }
   
@@ -133,28 +109,40 @@ void countUpLED() {
     pixel_counter ++;
   }
   if (pixel_counter % 3 == 0) {
-    // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
-    pixels.setPixelColor(pixel_counter, pixels.Color(35, 150, 35)); // Moderately bright green color.
-
-    pixels.show(); // This sends the updated pixel color to the hardware.
-
-\
+    pixels.setPixelColor(pixel_counter, pixels.Color(35, 150, 35)); 
+    pixels.show(); 
   }
   if (pixel_counter % 3 == 1) {
-    // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
-    pixels.setPixelColor(pixel_counter, pixels.Color(150, 35, 35)); // Moderately bright green color.
-
-    pixels.show(); // This sends the updated pixel color to the hardware.
-
+    pixels.setPixelColor(pixel_counter, pixels.Color(150, 35, 35));
+    pixels.show();
   }
   if (pixel_counter % 3 == 2) {
-    // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
-    pixels.setPixelColor(pixel_counter, pixels.Color(35, 35, 150)); // Moderately bright green color.
-
-    pixels.show(); // This sends the updated pixel color to the hardware.
-
+    pixels.setPixelColor(pixel_counter, pixels.Color(35, 35, 150)); 
+    pixels.show(); 
   }
   pixel_counter ++;
 }
 
+void blinking(int num_blinks, int num_pixels) {
+  for (int j = 0; j < num_blinks ; j++) {
+    if (j % 2 == 0) {
+      for (int k = 0 ; k < num_pixels ; k++) {
+        pixels1.setPixelColor(k, pixels1.Color(150, 150, 35));
+        pixels.setPixelColor(k, pixels.Color(150, 150, 35));
+      }
+      delay(blinkdelay);
+      pixels1.show();
+      pixels.show();
+    }
+    else {
+      for (int k = 0 ; k < num_pixels ; k++) {
+        pixels1.setPixelColor(k, pixels1.Color(0, 0, 0));
+        pixels.setPixelColor(k, pixels.Color(0, 0, 0));
+      }
+      delay(blinkdelay);
+      pixels1.show();
+      pixels.show();
+    }
+  }
+}
 
