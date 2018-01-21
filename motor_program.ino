@@ -16,7 +16,6 @@ void setup()
 
 void loop() 
 { 
-  int value;
   int right;
   int left; 
   right = digitalRead(right_reader);
@@ -47,12 +46,4 @@ void loop()
     analogWrite(E1, 0);   //PWM Speed Control
     analogWrite(E2, 0);   //PWM Speed Control
   }
-  /*for(value = 0 ; value <= 255; value++) 
-  { 
-    digitalWrite(M1,HIGH);   
-    digitalWrite(M2, HIGH);       
-    analogWrite(E1, 0);   //PWM Speed Control
-    analogWrite(E2, 0);   //PWM Speed Control
-    delay(30); 
-  } */ 
 }
